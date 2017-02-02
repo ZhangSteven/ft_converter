@@ -1,0 +1,12 @@
+# ignore the python class files (.pyc)
+__pycache__/
+
+# ignore the log file
+ft.log
+
+# ignore the output csv files
+*.csv
+
+# ignore the input excel files
+*.xls
+*.xlsx
