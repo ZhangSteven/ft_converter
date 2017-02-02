@@ -10,3 +10,6 @@ ft.log
 # ignore the input excel files
 *.xls
 *.xlsx
+
+# keep everything including excel files in the samples directory
+!samples/*
