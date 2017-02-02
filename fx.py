@@ -6,15 +6,10 @@
 # FXPurch, FXSale: buy one currency and sell another at the same time, they
 # always occur in pairs.
 
-from ft_converter.utility import logger, get_datemode, convert_datetime_to_string, \
-									is_blank_line, is_empty_cell, get_input_directory
-from ft_converter.ft_main import read_data_fields, get_LocationAccount, \
-									convert_float_to_datetime
+from ft_converter.utility import logger, get_datemode
+from ft_converter.ft_utility import convert_datetime_to_string, \
+			get_LocationAccount, convert_float_to_datetime
 from ft_converter.match import match
-from ft_converter.validate import validate_line_info
-from xlrd import open_workbook
-from xlrd.xldate import xldate_as_datetime
-from datetime import datetime
 
 
 
@@ -48,7 +43,7 @@ def filter_fx_trade_list(transaction_list):
 	for transaction in transaction_list:
 		if transaction['TRANTYP'] == 'FXPurch':
 			buy_list.append(transaction)
-		else if transaction['TRANTYP'] == 'FXSale':
+		elif transaction['TRANTYP'] == 'FXSale':
 			sell_list.append(transaction)
 
 	return buy_list, sell_list
@@ -161,27 +156,25 @@ def create_fx_record(fx_buy, fx_sell, record_fields):
 	# end of for loop
 
 	create_fx_record_key_value(new_record)
-
 	return new_record
-
-
-
-if __name__ == '__main__':
-	"""
-	Read the match status file (Geneva export of review recon status), and
-	the transaction file, then extract the below transactions that can explain
-	the difference in the position break report. Note that the match status
-	does not contain 'Approved' status, only 'Near' or 'Unmatched'.
-
-	1. CSA: transferred in (from accounts not under FT)
-	2. CSW: transferred out (to accounts not under FT)
-	3. IATSW: transferred out (internal accounts)
-	4. IATSA: transferred in (internal accounts)
-	5. CALLED: called by issuer 
-	6. TNDRL: buy back by issuer
-
-	If a position break has a difference of say, 100K, but the above transactions
-	found in the transaction file does not explain the difference, then they
-	are not extracted at all.
-	"""
 	
+
+
+def write_csv(file, records):
+	with open(file, 'w', newline='') as csvfile:
+		logger.debug('write_csv(): {0}'.format(file))
+		file_writer = csv.writer(csvfile)
+		file_writer.writerow(get_fx_record_fields())
+
+		for record in records:
+			row = []
+			for fld in get_fx_record_fields():
+				row.append(record[fld])
+				
+			file_writer.writerow(row)
+
+
+
+def handle_fx(output_file, transaction_list):
+	records = to_geneva_fx_records(create_fx_pairs(transaction_list))
+	write_csv(output_file, records)

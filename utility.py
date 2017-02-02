@@ -1,10 +1,10 @@
 # coding=utf-8
 # 
-# from config_logging package, provides a config object (from config file)
-# and a logger object (logging to a file).
+# logging and config goes here.
 # 
 
 import configparser, os
+from datetime import datetime
 from config_logging.file_logger import get_file_logger
 
 
@@ -115,11 +115,3 @@ def get_output_directory():
 		directory = get_input_directory()
 
 	return directory
-
-
-
-def convert_datetime_to_string(dt):
-	"""
-	convert a datetime object to string in the 'yyyy-mm-dd' format.
-	"""
-	return '{0}-{1}-{2}'.format(dt.year, dt.month, dt.day)

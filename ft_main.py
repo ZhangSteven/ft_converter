@@ -2,32 +2,21 @@
 # 
 # The main program to convert FT transaction files to geneva records.
 
-from trade_converter.utility import logger, get_datemode, convert_datetime_to_string, \
-									get_input_directory
-from trade_converter.match import match
-from trade_converter.validate import validate_line_info
+from ft_converter.utility import logger, get_datemode, get_input_directory, \
+			get_output_directory
+from ft_converter.ft_utility import convert_float_to_datetime
+from ft_converter.validate import validate_line_info
+from ft_converter.fx import handle_fx
 from xlrd import open_workbook
 from xlrd.xldate import xldate_as_datetime
 from datetime import datetime
 
 
 
-class LocationAccountNotFound(Exception):
-	pass
-
-
-
 def read_transaction_file(filename):
 	"""
-	Note: Read the transaction file for cash transactions, a cash transaction
-	includes:
-
-	1. FXPurch, FXSale: buy one currency and sell another at the same time.
-		These two transactions always occur in pairs.
-	2. CashAdd: Cash deposit.
-	3. CashWth: Cash withdrawal.
-	4. IATCA, IATCW: cash transfers among accounts under FT control.
-		These two transactions always occur in pairs.
+	Read a transaction file, create a list of transactions based on the
+	information read.
 	"""
 	logger.debug('read_transaction_file(): {0}'.format(filename))
 
@@ -109,32 +98,6 @@ def read_data_fields(ws, row):
 
 
 
-def get_LocationAccount(portfolio_id):
-	boc_portfolios = ['12229', '12366', '12528', '12630', '12732', '12733']
-	jpm_portfolios = ['12548']
-
-	if portfolio_id in boc_portfolios:
-		return 'BOCHK'
-	elif portfolio_id in jpm_portfolios:
-		return 'JPM'
-	else:
-		logger.error('get_LocationAccount(): no LocationAccount found for portfolio id {0}'.
-						format(portfolio_id))
-		raise LocationAccountNotFound()
-
-
-
-def convert_float_to_datetime(value):
-	"""
-	the value is of type float, in the form of 'mmddyyyy' or 'mddyyyy'
-	"""
-	month = int(value/1000000)
-	day = int((value - month*1000000)/10000)
-	year = int(value - month*1000000 - day*10000)
-	return datetime(year, month, day)
-
-
-
 def is_blank_line(ws, row):
 	for i in range(5):
 		if not is_empty_cell(ws, row, i):
@@ -153,7 +116,58 @@ def is_empty_cell(ws, row, column):
 
 
 
+def handle_transactions(transaction_list):
+	pass
+
+
+
+def show_row_in_error(row_in_error):
+	if len(row_in_error) > 0:
+		print('The following rows are in error:')
+		for row in row_in_error:
+			print(row)
+
+
+
 
 if __name__ == '__main__':
-	
-	
+	"""
+	Read a transaction file from FT, extract all transactions from it, then
+	create output csv file based on the transactions.
+
+	The user can supply a transaction type to handle, in that case, the program
+	only search for this kind of transactions and ignore the rest. If no
+	transaction type is supplied, then the program generates output for all
+	transactions it can handle.
+	"""
+	parser = argparse.ArgumentParser(description='Read ft transaction file and create csv output for Geneva upload.')
+	parser.add_argument('transaction_file')
+	parser.add_argument('--type', help='handle a specific transaction type', required=False)
+	args = parser.parse_args()
+
+	import os, sys
+	input_file = os.path.join(get_input_directory(), args.transaction_file)
+	if not os.path.exists(input_file):
+		print('{0} does not exist'.format(input_file))
+		sys.exit(1)
+
+	try:
+		transaction_list, row_in_error = read_transaction_file(input_file)
+
+		if not args.type is None:
+			if args.type == 'fx':
+				handle_fx(os.path.join(get_output_directory(), 'fx_upload.csv'), 
+							transaction_list)
+			else:
+				print('unrecoginized transaction type: {0}'.format(args.type))
+				sys.exit(1)
+		else:
+			handle_transactions(transaction_list)
+
+	except:
+		print('Something goes wrong, check log file.')
+	else:
+		print('OK.')
+	finally:
+		show_row_in_error(row_in_error)
+

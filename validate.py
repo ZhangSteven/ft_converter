@@ -2,6 +2,9 @@
 # 
 # Do validation for all types of transactions.
 
+from ft_converter.utility import logger
+from datetime import datetime
+
 
 
 class InvalidLineInfo(Exception):
@@ -17,28 +20,36 @@ class InvalidCashTransaction(Exception):
 
 def validate_line_info(line_info):
 
-	if fld in ['ACCT_ACNO', 'SCTYID_SMSEQ', 'SCTYID_SEDOL', 'SCTYID_CUSIP',
-				'TRANTYP', 'TRANCOD', 'LCLCCY', 'SCTYID_ISIN'] \
-			and not isinstance(line_info[fld], str):
-		
-		logger.error('validate_line_info(): field {0} should be string, value={1}'.
-						format(fld, line_info[fld]))
-		raise InvalidLineInfo()
-
-
-	if fld in ['TRDDATE', 'STLDATE', 'ENTRDATE', 'QTY', 'GROSSBAS', 'PRINB', 
-				'RGLBVBAS', 'RGLCCYCLS', 'ACCRBAS', 'TRNBVBAS', 'GROSSLCL', 
-				'FXRATE', 'TRADEPRC'] and not isinstance(line_info[fld], float):
-		
-		logger.error('validate_line_info(): field {0} should be float, value={1}'.
+	for fld in line_info:
+		if fld in ['ACCT_ACNO', 'SCTYID_SMSEQ', 'SCTYID_SEDOL', 'SCTYID_CUSIP',
+					'TRANTYP', 'TRANCOD', 'LCLCCY', 'SCTYID_ISIN'] \
+				and not isinstance(line_info[fld], str):
+			
+			logger.error('validate_line_info(): field {0} should be string, value={1}'.
 							format(fld, line_info[fld]))
-		raise InvalidLineInfo()
+			raise InvalidLineInfo()
 
 
-	if line_info['STLDATE'] < line_info['TRDDATE'] or line_info['ENTRDATE'] < line_info['TRDDATE']:
-		logger.error('validate_line_info(): invalid dates, trade date={0}, settle day={1}, enterday={2}'.
-						format(line_info['TRDDATE'], line_info['STLDATE'], line_info['ENTRDATE']))
-		raise InvalidLineInfo()
+		if fld in ['QTY', 'GROSSBAS', 'PRINB', 'RGLBVBAS', 'RGLCCYCLS',
+					'ACCRBAS', 'TRNBVBAS', 'GROSSLCL', 'FXRATE', 'TRADEPRC'] \
+				and not isinstance(line_info[fld], float):
+			
+			logger.error('validate_line_info(): field {0} should be float, value={1}'.
+								format(fld, line_info[fld]))
+			raise InvalidLineInfo()
+
+
+		if fld in [ 'TRDDATE', 'STLDATE', 'ENTRDATE'] \
+				and not isinstance(line_info[fld], datetime):
+			logger.error('validate_line_info(): field {0} should be of type datetime, value={1}'.
+								format(fld, line_info[fld]))
+			raise InvalidLineInfo()		
+
+
+		if line_info['STLDATE'] < line_info['TRDDATE'] or line_info['ENTRDATE'] < line_info['TRDDATE']:
+			logger.error('validate_line_info(): invalid dates, trade date={0}, settle day={1}, enterday={2}'.
+							format(line_info['TRDDATE'], line_info['STLDATE'], line_info['ENTRDATE']))
+			raise InvalidLineInfo()
 
 	
 	# now validate further based on transaction type
