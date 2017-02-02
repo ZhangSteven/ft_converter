@@ -44,3 +44,32 @@ def get_LocationAccount(portfolio_id):
 		logger.error('get_LocationAccount(): no LocationAccount found for portfolio id {0}'.
 						format(portfolio_id))
 		raise LocationAccountNotFound()
+
+
+
+def fix_duplicate_key_value(records):
+	"""
+	Detect whether there are duplicate keyvalues for different records,
+	if there are, modify the keyvalues to make all keys unique.
+	"""
+	keys = []
+	for record in records:
+		i = 1
+		temp_key = record['KeyValue']
+		while temp_key in keys:
+			temp_key = record['KeyValue'] + '_' + str(i)
+			i = i + 1
+
+		record['KeyValue'] = temp_key
+		record['UserTranId1'] = temp_key
+		keys.append(record['KeyValue'])
+
+	# check again
+	keys = []
+	for record in records:
+		if record['KeyValue'] in keys:
+			logger.error('fix_duplicate_key_value(): duplicate keys still exists, key={0}, investment={1}'.
+							format(record['KeyValue'], record['Investment']))
+			raise DuplicateKeys()
+
+		keys.append(record['KeyValue'])

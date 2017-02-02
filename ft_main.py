@@ -140,6 +140,7 @@ if __name__ == '__main__':
 	transaction type is supplied, then the program generates output for all
 	transactions it can handle.
 	"""
+	import argparse
 	parser = argparse.ArgumentParser(description='Read ft transaction file and create csv output for Geneva upload.')
 	parser.add_argument('transaction_file')
 	parser.add_argument('--type', help='handle a specific transaction type', required=False)
@@ -165,6 +166,7 @@ if __name__ == '__main__':
 			handle_transactions(transaction_list)
 
 	except:
+		logger.exception('ft_main():')
 		print('Something goes wrong, check log file.')
 	else:
 		print('OK.')

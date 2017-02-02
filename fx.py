@@ -8,7 +8,8 @@
 
 from ft_converter.utility import logger, get_datemode
 from ft_converter.ft_utility import convert_datetime_to_string, \
-			get_LocationAccount, convert_float_to_datetime
+			get_LocationAccount, convert_float_to_datetime, \
+			fix_duplicate_key_value
 from ft_converter.match import match
 
 
@@ -161,6 +162,7 @@ def create_fx_record(fx_buy, fx_sell, record_fields):
 
 
 def write_csv(file, records):
+	import csv
 	with open(file, 'w', newline='') as csvfile:
 		logger.debug('write_csv(): {0}'.format(file))
 		file_writer = csv.writer(csvfile)
@@ -177,4 +179,5 @@ def write_csv(file, records):
 
 def handle_fx(output_file, transaction_list):
 	records = to_geneva_fx_records(create_fx_pairs(transaction_list))
+	fix_duplicate_key_value(records)
 	write_csv(output_file, records)

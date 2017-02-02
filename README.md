@@ -30,3 +30,4 @@ To run unit test, use
 +++++++++++
 ver 0.1
 +++++++++++
+1. FX record conversion ready.
