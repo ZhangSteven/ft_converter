@@ -7,6 +7,7 @@ from ft_converter.utility import logger, get_datemode, get_input_directory, \
 from ft_converter.ft_utility import convert_float_to_datetime
 from ft_converter.validate import validate_line_info
 from ft_converter.fx import handle_fx
+from ft_converter.cash import handle_cash
 from xlrd import open_workbook
 from xlrd.xldate import xldate_as_datetime
 from datetime import datetime
@@ -157,11 +158,15 @@ if __name__ == '__main__':
 
 		if not args.type is None:
 			if args.type == 'fx':
-				handle_fx(os.path.join(get_output_directory(), 'fx_upload.csv'), 
-							transaction_list)
+				handler = handle_fx
+			elif args.type == 'cash':
+				handler = handle_cash
 			else:
 				print('unrecoginized transaction type: {0}'.format(args.type))
 				sys.exit(1)
+
+			handler(os.path.join(get_output_directory(), '{0}_upload.csv'.format(args.type)), 
+							transaction_list)
 		else:
 			handle_transactions(transaction_list)
 

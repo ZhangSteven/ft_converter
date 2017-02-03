@@ -28,6 +28,13 @@ To run unit test, use
 
 
 +++++++++++
+ver 0.2
++++++++++++
+1. Cash record conversion ready, for IATCA, IATCW, CashAdd, CashWth
+
+
+
++++++++++++
 ver 0.1
 +++++++++++
-1. FX record conversion ready.
+1. FX record conversion ready, for FXPurch, FXSale

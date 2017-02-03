@@ -2,7 +2,7 @@
 # 
 # Command functions called by other modules go here.
 # 
-
+import csv
 from datetime import datetime
 from ft_converter.utility import logger
 
@@ -73,3 +73,18 @@ def fix_duplicate_key_value(records):
 			raise DuplicateKeys()
 
 		keys.append(record['KeyValue'])
+
+
+
+def write_csv(file, record_fields, records):
+	with open(file, 'w', newline='') as csvfile:
+		logger.debug('write_csv(): {0}'.format(file))
+		file_writer = csv.writer(csvfile)
+		file_writer.writerow(record_fields)
+
+		for record in records:
+			row = []
+			for fld in record_fields:
+				row.append(record[fld])
+				
+			file_writer.writerow(row)
