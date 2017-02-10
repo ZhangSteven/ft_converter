@@ -11,6 +11,9 @@ from ft_converter.utility import logger
 class LocationAccountNotFound(Exception):
 	pass
 
+class InvestmentIdNotFound(Exception):
+	pass
+
 
 
 def convert_float_to_datetime(value):
@@ -44,6 +47,23 @@ def get_LocationAccount(portfolio_id):
 		logger.error('get_LocationAccount(): no LocationAccount found for portfolio id {0}'.
 						format(portfolio_id))
 		raise LocationAccountNotFound()
+
+
+
+def get_geneva_investment_id(trade_info):
+	"""
+	Get the Geneva investment ID for a security in FT file.
+
+	If a security has ISIN code, use its ISIN code to load its Geneva id,
+	otherwise use FT's unique security id to load the Geneva id.
+	"""
+	if trade_info['SCTYID_ISIN'] != '':
+		return get_investment_Ids(trade_info['ACCT_ACNO'], 'ISIN', trade_info['SCTYID_ISIN'])[0]
+	elif trade_info['SCTYID_SMSEQ'] != '':
+		return get_investment_Ids(trade_info['ACCT_ACNO'], 'FT', trade_info['SCTYID_SMSEQ'])[0]
+	else:
+		logger.error('get_geneva_investment_id(): no security identifier found.')
+		raise InvestmentIdNotFound()
 
 
 
